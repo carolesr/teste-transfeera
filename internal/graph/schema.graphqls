@@ -1,0 +1,33 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Receiver {
+  id:         String!
+	identifier: String!
+	name:      String!
+	email:      String!
+	pixKeyType: String!
+	pixKey:     String!
+	bank:       String
+	agency:     String
+	account:    String
+	status:     String
+}
+
+input NewReceiver {
+  identifier: String!
+	name:      String!
+	email:      String!
+	pixKeyType: String!
+	pixKey:     String!
+}
+
+type Query {
+  receivers: [Receiver!]!
+}
+
+type Mutation {
+  createReceiver(input: NewReceiver!): Receiver!
+}
+
