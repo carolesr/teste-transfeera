@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/teste-transfeera/internal/entity"
 	"github.com/teste-transfeera/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,14 +31,17 @@ func NewReceiverRepository(collection *mongo.Collection, ctx context.Context) Re
 
 func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver, error) {
 	model := ToModel(receiver)
+	model.CreatedAt = time.Now()
+	model.UpdatedAt = time.Now()
+	model.ID = uuid.New()
 
-	result, err := r.collection.InsertOne(r.ctx, &model)
+	_, err := r.collection.InsertOne(r.ctx, &model)
 	if err != nil {
 		return nil, err
 	}
 
-	receiver.ID = result.InsertedID.(string)
-	return &receiver, nil
+	entity := model.ToEntity()
+	return &entity, nil
 }
 
 func (r *receiverRepository) List() ([]entity.Receiver, error) {
@@ -49,13 +54,14 @@ func (r *receiverRepository) List() ([]entity.Receiver, error) {
 
 	var receivers []entity.Receiver
 	for cursor.Next(r.ctx) {
-		var receiver entity.Receiver
+		var receiver model.Receiver
 		err := cursor.Decode(&receiver)
 		if err != nil {
 			return nil, err
 		}
 
-		receivers = append(receivers, receiver)
+		entity := receiver.ToEntity()
+		receivers = append(receivers, entity)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -69,15 +75,16 @@ func (r *receiverRepository) List() ([]entity.Receiver, error) {
 
 func ToModel(entity entity.Receiver) model.Receiver {
 	return model.Receiver{
-		ID:         entity.ID,
 		Identifier: entity.Identifier,
 		Name:       entity.Name,
 		Email:      entity.Email,
-		PixKeyType: entity.PixKeyType,
-		PixKey:     entity.PixKey,
-		Bank:       entity.Bank,
-		Agency:     entity.Agency,
-		Account:    entity.Account,
-		Status:     entity.Status,
+		Pix: model.Pix{
+			KeyType: string(entity.Pix.KeyType),
+			Key:     entity.Pix.Key,
+		},
+		Bank:    entity.Bank,
+		Agency:  entity.Agency,
+		Account: entity.Account,
+		Status:  string(entity.Status),
 	}
 }

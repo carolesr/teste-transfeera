@@ -1,10 +1,6 @@
 package usecase
 
 import (
-	"crypto/rand"
-	"fmt"
-	"math/big"
-
 	"github.com/teste-transfeera/internal/entity"
 )
 
@@ -22,19 +18,17 @@ type CreateReceiverInput struct {
 }
 
 func (u *receiverUseCase) Create(input *CreateReceiverInput) (*entity.Receiver, error) {
-	fmt.Println("create receiver usecase")
-	rand, _ := rand.Int(rand.Reader, big.NewInt(100))
-	receiver := &entity.Receiver{
-		ID:         fmt.Sprintf("T%d", rand),
+	receiver := entity.Receiver{
 		Identifier: input.Identifier,
 		Name:       input.Name,
 		Email:      input.Email,
-		PixKeyType: input.PixKeyType,
-		PixKey:     input.PixKey,
+		Pix: entity.Pix{
+			KeyType: entity.PixKeyType(input.PixKeyType),
+			Key:     input.PixKey,
+		},
 	}
-	u.receivers = append(u.receivers, receiver)
 
-	newReceiver, err := u.receiverRepository.Create(*receiver)
+	newReceiver, err := u.receiverRepository.Create(receiver)
 	if err != nil {
 		return nil, err
 	}

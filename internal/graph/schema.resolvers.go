@@ -6,34 +6,37 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/teste-transfeera/internal/entity"
 	"github.com/teste-transfeera/internal/usecase"
 )
 
 // CreateReceiver is the resolver for the createReceiver field.
-func (r *mutationResolver) CreateReceiver(ctx context.Context, input entity.NewReceiver) (*entity.Receiver, error) {
+func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver) (*Receiver, error) {
 	usecaseInput := &usecase.CreateReceiverInput{
 		Name:       input.Name,
 		Email:      input.Email,
 		Identifier: input.Identifier,
-		PixKeyType: input.PixKeyType,
+		PixKeyType: string(input.PixKeyType),
 		PixKey:     input.PixKey,
 	}
-	return r.ReceiverUseCases.Create(usecaseInput)
+	result, err := r.ReceiverUseCases.Create(usecaseInput)
+
+	return ToOutput(*result), err
 }
 
 // Receivers is the resolver for the receivers field.
-func (r *queryResolver) Receivers(ctx context.Context) ([]entity.Receiver, error) {
-	receivers, err := r.ReceiverUseCases.List()
+func (r *queryResolver) Receivers(ctx context.Context) ([]*Receiver, error) {
+	result, err := r.ReceiverUseCases.List()
 	if err != nil {
-		fmt.Println("ERR usecase ", err)
 		return nil, err
 	}
 
-	fmt.Println("receivers ", receivers)
-	return receivers, err
+	var output []*Receiver
+	for _, entity := range result {
+		output = append(output, ToOutput(entity))
+	}
+	return output, err
 }
 
 // Mutation returns MutationResolver implementation.
@@ -44,3 +47,16 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+func ToOutput(entity entity.Receiver) *Receiver {
+	return &Receiver{
+		ID:         entity.ID,
+		Name:       entity.Name,
+		Email:      entity.Email,
+		Identifier: entity.Identifier,
+		Pix: &Pix{
+			KeyType: string(entity.Pix.KeyType),
+			Key:     entity.Pix.Key,
+		},
+	}
+}

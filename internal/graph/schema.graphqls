@@ -5,22 +5,26 @@
 type Receiver {
   id:         String!
 	identifier: String!
-	name:      String!
+	name:      	String!
 	email:      String!
-	pixKeyType: String!
-	pixKey:     String!
+	pix: 		Pix!
 	bank:       String
 	agency:     String
 	account:    String
 	status:     String
 }
 
+type Pix {
+	keyType: String!
+	key: String!
+}
+
 input NewReceiver {
   identifier: String!
 	name:      String!
 	email:      String!
-	pixKeyType: String!
-	pixKey:     String!
+	pixKeyType: 		String!
+	pixKey: 		String!
 }
 
 type Query {

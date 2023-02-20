@@ -13,7 +13,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/teste-transfeera/internal/entity"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -45,7 +44,12 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreateReceiver func(childComplexity int, input entity.NewReceiver) int
+		CreateReceiver func(childComplexity int, input NewReceiver) int
+	}
+
+	Pix struct {
+		Key     func(childComplexity int) int
+		KeyType func(childComplexity int) int
 	}
 
 	Query struct {
@@ -60,17 +64,16 @@ type ComplexityRoot struct {
 		ID         func(childComplexity int) int
 		Identifier func(childComplexity int) int
 		Name       func(childComplexity int) int
-		PixKey     func(childComplexity int) int
-		PixKeyType func(childComplexity int) int
+		Pix        func(childComplexity int) int
 		Status     func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
-	CreateReceiver(ctx context.Context, input entity.NewReceiver) (*entity.Receiver, error)
+	CreateReceiver(ctx context.Context, input NewReceiver) (*Receiver, error)
 }
 type QueryResolver interface {
-	Receivers(ctx context.Context) ([]entity.Receiver, error)
+	Receivers(ctx context.Context) ([]*Receiver, error)
 }
 
 type executableSchema struct {
@@ -98,7 +101,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateReceiver(childComplexity, args["input"].(entity.NewReceiver)), true
+		return e.complexity.Mutation.CreateReceiver(childComplexity, args["input"].(NewReceiver)), true
+
+	case "Pix.key":
+		if e.complexity.Pix.Key == nil {
+			break
+		}
+
+		return e.complexity.Pix.Key(childComplexity), true
+
+	case "Pix.keyType":
+		if e.complexity.Pix.KeyType == nil {
+			break
+		}
+
+		return e.complexity.Pix.KeyType(childComplexity), true
 
 	case "Query.receivers":
 		if e.complexity.Query.Receivers == nil {
@@ -156,19 +173,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Receiver.Name(childComplexity), true
 
-	case "Receiver.pixKey":
-		if e.complexity.Receiver.PixKey == nil {
+	case "Receiver.pix":
+		if e.complexity.Receiver.Pix == nil {
 			break
 		}
 
-		return e.complexity.Receiver.PixKey(childComplexity), true
-
-	case "Receiver.pixKeyType":
-		if e.complexity.Receiver.PixKeyType == nil {
-			break
-		}
-
-		return e.complexity.Receiver.PixKeyType(childComplexity), true
+		return e.complexity.Receiver.Pix(childComplexity), true
 
 	case "Receiver.status":
 		if e.complexity.Receiver.Status == nil {
@@ -268,10 +278,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createReceiver_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 entity.NewReceiver
+	var arg0 NewReceiver
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐNewReceiver(ctx, tmp)
+		arg0, err = ec.unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐNewReceiver(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -347,7 +357,7 @@ func (ec *executionContext) _Mutation_createReceiver(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateReceiver(rctx, fc.Args["input"].(entity.NewReceiver))
+		return ec.resolvers.Mutation().CreateReceiver(rctx, fc.Args["input"].(NewReceiver))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -358,9 +368,9 @@ func (ec *executionContext) _Mutation_createReceiver(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*entity.Receiver)
+	res := resTmp.(*Receiver)
 	fc.Result = res
-	return ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiver(ctx, field.Selections, res)
+	return ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createReceiver(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -379,10 +389,8 @@ func (ec *executionContext) fieldContext_Mutation_createReceiver(ctx context.Con
 				return ec.fieldContext_Receiver_name(ctx, field)
 			case "email":
 				return ec.fieldContext_Receiver_email(ctx, field)
-			case "pixKeyType":
-				return ec.fieldContext_Receiver_pixKeyType(ctx, field)
-			case "pixKey":
-				return ec.fieldContext_Receiver_pixKey(ctx, field)
+			case "pix":
+				return ec.fieldContext_Receiver_pix(ctx, field)
 			case "bank":
 				return ec.fieldContext_Receiver_bank(ctx, field)
 			case "agency":
@@ -405,6 +413,94 @@ func (ec *executionContext) fieldContext_Mutation_createReceiver(ctx context.Con
 	if fc.Args, err = ec.field_Mutation_createReceiver_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Pix_keyType(ctx context.Context, field graphql.CollectedField, obj *Pix) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Pix_keyType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.KeyType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Pix_keyType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Pix",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Pix_key(ctx context.Context, field graphql.CollectedField, obj *Pix) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Pix_key(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Pix_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Pix",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -434,9 +530,9 @@ func (ec *executionContext) _Query_receivers(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]entity.Receiver)
+	res := resTmp.([]*Receiver)
 	fc.Result = res
-	return ec.marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiverᚄ(ctx, field.Selections, res)
+	return ec.marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiverᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receivers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -455,10 +551,8 @@ func (ec *executionContext) fieldContext_Query_receivers(ctx context.Context, fi
 				return ec.fieldContext_Receiver_name(ctx, field)
 			case "email":
 				return ec.fieldContext_Receiver_email(ctx, field)
-			case "pixKeyType":
-				return ec.fieldContext_Receiver_pixKeyType(ctx, field)
-			case "pixKey":
-				return ec.fieldContext_Receiver_pixKey(ctx, field)
+			case "pix":
+				return ec.fieldContext_Receiver_pix(ctx, field)
 			case "bank":
 				return ec.fieldContext_Receiver_bank(ctx, field)
 			case "agency":
@@ -601,7 +695,7 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_id(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_id(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_id(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -645,7 +739,7 @@ func (ec *executionContext) fieldContext_Receiver_id(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_identifier(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_identifier(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_identifier(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -689,7 +783,7 @@ func (ec *executionContext) fieldContext_Receiver_identifier(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_name(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_name(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_name(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -733,7 +827,7 @@ func (ec *executionContext) fieldContext_Receiver_name(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_email(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_email(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_email(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -777,8 +871,8 @@ func (ec *executionContext) fieldContext_Receiver_email(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_pixKeyType(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Receiver_pixKeyType(ctx, field)
+func (ec *executionContext) _Receiver_pix(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Receiver_pix(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -791,7 +885,7 @@ func (ec *executionContext) _Receiver_pixKeyType(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.PixKeyType, nil
+		return obj.Pix, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -803,69 +897,31 @@ func (ec *executionContext) _Receiver_pixKeyType(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*Pix)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐPix(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Receiver_pixKeyType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Receiver_pix(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Receiver",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "keyType":
+				return ec.fieldContext_Pix_keyType(ctx, field)
+			case "key":
+				return ec.fieldContext_Pix_key(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pix", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_pixKey(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Receiver_pixKey(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PixKey, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Receiver_pixKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Receiver",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Receiver_bank(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_bank(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_bank(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -906,7 +962,7 @@ func (ec *executionContext) fieldContext_Receiver_bank(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_agency(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_agency(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_agency(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -947,7 +1003,7 @@ func (ec *executionContext) fieldContext_Receiver_agency(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_account(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_account(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_account(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -988,7 +1044,7 @@ func (ec *executionContext) fieldContext_Receiver_account(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Receiver_status(ctx context.Context, field graphql.CollectedField, obj *entity.Receiver) (ret graphql.Marshaler) {
+func (ec *executionContext) _Receiver_status(ctx context.Context, field graphql.CollectedField, obj *Receiver) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Receiver_status(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2802,8 +2858,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputNewReceiver(ctx context.Context, obj interface{}) (entity.NewReceiver, error) {
-	var it entity.NewReceiver
+func (ec *executionContext) unmarshalInputNewReceiver(ctx context.Context, obj interface{}) (NewReceiver, error) {
+	var it NewReceiver
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2902,6 +2958,41 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var pixImplementors = []string{"Pix"}
+
+func (ec *executionContext) _Pix(ctx context.Context, sel ast.SelectionSet, obj *Pix) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pixImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Pix")
+		case "keyType":
+
+			out.Values[i] = ec._Pix_keyType(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "key":
+
+			out.Values[i] = ec._Pix_key(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2962,7 +3053,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var receiverImplementors = []string{"Receiver"}
 
-func (ec *executionContext) _Receiver(ctx context.Context, sel ast.SelectionSet, obj *entity.Receiver) graphql.Marshaler {
+func (ec *executionContext) _Receiver(ctx context.Context, sel ast.SelectionSet, obj *Receiver) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, receiverImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -2998,16 +3089,9 @@ func (ec *executionContext) _Receiver(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "pixKeyType":
+		case "pix":
 
-			out.Values[i] = ec._Receiver_pixKeyType(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "pixKey":
-
-			out.Values[i] = ec._Receiver_pixKey(ctx, field, obj)
+			out.Values[i] = ec._Receiver_pix(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3372,16 +3456,26 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐNewReceiver(ctx context.Context, v interface{}) (entity.NewReceiver, error) {
+func (ec *executionContext) unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐNewReceiver(ctx context.Context, v interface{}) (NewReceiver, error) {
 	res, err := ec.unmarshalInputNewReceiver(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiver(ctx context.Context, sel ast.SelectionSet, v entity.Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐPix(ctx context.Context, sel ast.SelectionSet, v *Pix) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Pix(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v Receiver) graphql.Marshaler {
 	return ec._Receiver(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiverᚄ(ctx context.Context, sel ast.SelectionSet, v []entity.Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiverᚄ(ctx context.Context, sel ast.SelectionSet, v []*Receiver) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3405,7 +3499,7 @@ func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransf
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiver(ctx, sel, &v[i])
+			ret[i] = ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3425,7 +3519,7 @@ func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransf
 	return ret
 }
 
-func (ec *executionContext) marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚋmodelᚐReceiver(ctx context.Context, sel ast.SelectionSet, v *entity.Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v *Receiver) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
