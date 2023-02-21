@@ -20,7 +20,11 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		PixKeyType: string(input.PixKeyType),
 		PixKey:     input.PixKey,
 	}
+
 	result, err := r.ReceiverUseCases.Create(usecaseInput)
+	if err != nil {
+		return nil, err
+	}
 
 	return ToOutput(*result), err
 }
