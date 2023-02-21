@@ -2,7 +2,10 @@
 
 package graph
 
-import "github.com/teste-transfeera/internal/entity"
+type Edge struct {
+	Cursor string    `json:"cursor"`
+	Node   *Receiver `json:"node"`
+}
 
 type NewReceiver struct {
 	Identifier string  `json:"identifier"`
@@ -13,6 +16,12 @@ type NewReceiver struct {
 	Bank       *string `json:"bank"`
 	Agency     *string `json:"agency"`
 	Account    *string `json:"account"`
+}
+
+type PageInfo struct {
+	StartCursor string `json:"startCursor"`
+	EndCursor   string `json:"endCursor"`
+	HasNextPage *bool  `json:"hasNextPage"`
 }
 
 type Pix struct {
@@ -32,15 +41,7 @@ type Receiver struct {
 	Status     *string `json:"status"`
 }
 
-func ToOutput(entity entity.Receiver) *Receiver {
-	return &Receiver{
-		ID:         entity.ID,
-		Name:       entity.Name,
-		Email:      entity.Email,
-		Identifier: entity.Identifier,
-		Pix: &Pix{
-			KeyType: string(entity.Pix.KeyType),
-			Key:     entity.Pix.Key,
-		},
-	}
+type Receivers struct {
+	Edges    []*Edge   `json:"edges"`
+	PageInfo *PageInfo `json:"pageInfo"`
 }

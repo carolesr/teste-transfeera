@@ -30,8 +30,26 @@ input NewReceiver {
 	account:    String
 }
 
+type Receivers {
+  edges: [Edge!]!
+  pageInfo: PageInfo!
+}
+
+type Edge {
+  cursor: ID!
+  node: Receiver
+}
+
+type PageInfo {
+  startCursor: ID!
+  endCursor: ID!
+  hasNextPage: Boolean
+}
+
 type Query {
   receivers: [Receiver!]!
+  receiver(id: String!): Receiver!
+  listReceivers(first: Int = 10, after: ID): Receivers!
 }
 
 type Mutation {

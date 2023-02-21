@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teste-transfeera/internal/usecase"
 )
@@ -25,7 +26,7 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		return nil, err
 	}
 
-	return ToOutput(*result), err
+	return toOutput(*result), err
 }
 
 // Receivers is the resolver for the receivers field.
@@ -37,9 +38,75 @@ func (r *queryResolver) Receivers(ctx context.Context) ([]*Receiver, error) {
 
 	var output []*Receiver
 	for _, entity := range result {
-		output = append(output, ToOutput(entity))
+		output = append(output, toOutput(entity))
 	}
 	return output, err
+}
+
+// Receiver is the resolver for the receiver field.
+func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, error) {
+	fmt.Println("Receiver queryResolver")
+	panic(fmt.Errorf("not implemented: Receiver - receiver"))
+}
+
+// ListReceivers is the resolver for the listReceivers field.
+func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *string) (*Receivers, error) {
+
+	receivers, err := r.ReceiverUseCases.List()
+	if err != nil {
+		return nil, err
+	}
+
+	totalPerPage := TOTAL_PER_PAGE
+	if first != nil {
+		totalPerPage = *first
+	}
+
+	isInCurrentPage := true
+	var cursor string
+	if after != nil {
+		cursor, err = decodeBase64(*after)
+		if cursor != "" {
+			isInCurrentPage = false
+		}
+	}
+
+	count := 0
+	hasNextPage := false
+	edges := make([]*Edge, totalPerPage)
+	for i, receiver := range receivers {
+		hasReachedTotalPerPage := count == totalPerPage
+
+		if isInCurrentPage && !hasReachedTotalPerPage {
+			edges[count] = &Edge{
+				Cursor: encodeBase64([]byte(receiver.ID)),
+				Node:   toOutput(receiver),
+			}
+			count++
+		}
+
+		if receiver.ID == cursor {
+			isInCurrentPage = true
+		}
+
+		if hasReachedTotalPerPage {
+			hasNextPage = len(receivers) > i
+			break
+		}
+	}
+
+	pageInfo := PageInfo{
+		StartCursor: encodeBase64([]byte(edges[0].Node.ID)),
+		EndCursor:   encodeBase64([]byte(edges[count-1].Node.ID)),
+		HasNextPage: &hasNextPage,
+	}
+
+	result := Receivers{
+		Edges:    edges[:count],
+		PageInfo: &pageInfo,
+	}
+
+	return &result, nil
 }
 
 // Mutation returns MutationResolver implementation.
