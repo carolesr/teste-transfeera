@@ -32,3 +32,22 @@ func decodeBase64(cursor string) (string, error) {
 func encodeBase64(cursor []byte) string {
 	return base64.StdEncoding.EncodeToString(cursor)
 }
+
+func buildFilter(status *string, name *string, keyType *string, key *string) map[string]string {
+	filter := make(map[string]string)
+
+	if status != nil {
+		filter["status"] = *status
+	}
+	if name != nil {
+		filter["name"] = *name
+	}
+	if keyType != nil {
+		filter["key_type"] = *keyType
+	}
+	if key != nil {
+		filter["key"] = *key
+	}
+
+	return filter
+}

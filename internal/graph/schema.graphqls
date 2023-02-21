@@ -3,7 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 type Receiver {
-  	id:         String!
+  	id:         ID!
 	identifier: String!
 	name:      	String!
 	email:      String!
@@ -47,9 +47,8 @@ type PageInfo {
 }
 
 type Query {
-  receivers: [Receiver!]!
   receiver(id: String!): Receiver!
-  listReceivers(first: Int = 10, after: ID): Receivers!
+  listReceivers(first: Int = 10, after: ID, status: String, name: String, keyType: String, key: String): Receivers!
 }
 
 type Mutation {

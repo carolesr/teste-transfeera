@@ -7,7 +7,7 @@ import (
 
 type ReceiverUseCases interface {
 	Create(input *CreateReceiverInput) (*entity.Receiver, error)
-	List() ([]entity.Receiver, error)
+	List(filter map[string]string) ([]entity.Receiver, error)
 }
 
 type receiverUseCase struct {

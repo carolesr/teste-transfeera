@@ -29,20 +29,6 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 	return toOutput(*result), err
 }
 
-// Receivers is the resolver for the receivers field.
-func (r *queryResolver) Receivers(ctx context.Context) ([]*Receiver, error) {
-	result, err := r.ReceiverUseCases.List()
-	if err != nil {
-		return nil, err
-	}
-
-	var output []*Receiver
-	for _, entity := range result {
-		output = append(output, toOutput(entity))
-	}
-	return output, err
-}
-
 // Receiver is the resolver for the receiver field.
 func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, error) {
 	fmt.Println("Receiver queryResolver")
@@ -50,11 +36,18 @@ func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, err
 }
 
 // ListReceivers is the resolver for the listReceivers field.
-func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *string) (*Receivers, error) {
-
-	receivers, err := r.ReceiverUseCases.List()
+func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *string, status *string, name *string, keyType *string, key *string) (*Receivers, error) {
+	filter := buildFilter(status, name, keyType, key)
+	receivers, err := r.ReceiverUseCases.List(filter)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(receivers) == 0 {
+		return &Receivers{
+			Edges:    []*Edge{},
+			PageInfo: &PageInfo{},
+		}, nil
 	}
 
 	totalPerPage := TOTAL_PER_PAGE

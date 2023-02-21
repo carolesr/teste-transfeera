@@ -64,9 +64,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		ListReceivers func(childComplexity int, first *int, after *string) int
+		ListReceivers func(childComplexity int, first *int, after *string, status *string, name *string, keyType *string, key *string) int
 		Receiver      func(childComplexity int, id string) int
-		Receivers     func(childComplexity int) int
 	}
 
 	Receiver struct {
@@ -91,9 +90,8 @@ type MutationResolver interface {
 	CreateReceiver(ctx context.Context, input NewReceiver) (*Receiver, error)
 }
 type QueryResolver interface {
-	Receivers(ctx context.Context) ([]*Receiver, error)
 	Receiver(ctx context.Context, id string) (*Receiver, error)
-	ListReceivers(ctx context.Context, first *int, after *string) (*Receivers, error)
+	ListReceivers(ctx context.Context, first *int, after *string, status *string, name *string, keyType *string, key *string) (*Receivers, error)
 }
 
 type executableSchema struct {
@@ -182,7 +180,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.ListReceivers(childComplexity, args["first"].(*int), args["after"].(*string)), true
+		return e.complexity.Query.ListReceivers(childComplexity, args["first"].(*int), args["after"].(*string), args["status"].(*string), args["name"].(*string), args["keyType"].(*string), args["key"].(*string)), true
 
 	case "Query.receiver":
 		if e.complexity.Query.Receiver == nil {
@@ -195,13 +193,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Receiver(childComplexity, args["id"].(string)), true
-
-	case "Query.receivers":
-		if e.complexity.Query.Receivers == nil {
-			break
-		}
-
-		return e.complexity.Query.Receivers(childComplexity), true
 
 	case "Receiver.account":
 		if e.complexity.Receiver.Account == nil {
@@ -419,6 +410,42 @@ func (ec *executionContext) field_Query_listReceivers_args(ctx context.Context, 
 		}
 	}
 	args["after"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["status"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["status"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["keyType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyType"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["keyType"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg5
 	return args, nil
 }
 
@@ -871,69 +898,6 @@ func (ec *executionContext) fieldContext_Pix_key(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_receivers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_receivers(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Receivers(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*Receiver)
-	fc.Result = res
-	return ec.marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiverᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_receivers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Receiver_id(ctx, field)
-			case "identifier":
-				return ec.fieldContext_Receiver_identifier(ctx, field)
-			case "name":
-				return ec.fieldContext_Receiver_name(ctx, field)
-			case "email":
-				return ec.fieldContext_Receiver_email(ctx, field)
-			case "pix":
-				return ec.fieldContext_Receiver_pix(ctx, field)
-			case "bank":
-				return ec.fieldContext_Receiver_bank(ctx, field)
-			case "agency":
-				return ec.fieldContext_Receiver_agency(ctx, field)
-			case "account":
-				return ec.fieldContext_Receiver_account(ctx, field)
-			case "status":
-				return ec.fieldContext_Receiver_status(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Receiver", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_receiver(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_receiver(ctx, field)
 	if err != nil {
@@ -1022,7 +986,7 @@ func (ec *executionContext) _Query_listReceivers(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ListReceivers(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string))
+		return ec.resolvers.Query().ListReceivers(rctx, fc.Args["first"].(*int), fc.Args["after"].(*string), fc.Args["status"].(*string), fc.Args["name"].(*string), fc.Args["keyType"].(*string), fc.Args["key"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1223,7 +1187,7 @@ func (ec *executionContext) _Receiver_id(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receiver_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1233,7 +1197,7 @@ func (ec *executionContext) fieldContext_Receiver_id(ctx context.Context, field 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3708,26 +3672,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "receivers":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_receivers(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "receiver":
 			field := field
 
@@ -4324,50 +4268,6 @@ func (ec *executionContext) marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋi
 
 func (ec *executionContext) marshalNReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v Receiver) graphql.Marshaler {
 	return ec._Receiver(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiverᚄ(ctx context.Context, sel ast.SelectionSet, v []*Receiver) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v *Receiver) graphql.Marshaler {

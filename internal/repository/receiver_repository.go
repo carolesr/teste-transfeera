@@ -14,7 +14,7 @@ import (
 
 type ReceiverRepository interface {
 	Create(receiver entity.Receiver) (*entity.Receiver, error)
-	List() ([]entity.Receiver, error)
+	List(filter map[string]string) ([]entity.Receiver, error)
 }
 
 type receiverRepository struct {
@@ -44,10 +44,11 @@ func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver,
 	return &entity, nil
 }
 
-func (r *receiverRepository) List() ([]entity.Receiver, error) {
-	filter := bson.D{{}}
+func (r *receiverRepository) List(filter map[string]string) ([]entity.Receiver, error) {
+	bsonFilter := buildFilter(filter)
 	findOptions := options.Find()
-	cursor, err := r.collection.Find(r.ctx, filter, findOptions)
+
+	cursor, err := r.collection.Find(r.ctx, bsonFilter, findOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +72,25 @@ func (r *receiverRepository) List() ([]entity.Receiver, error) {
 	cursor.Close(r.ctx)
 
 	return receivers, nil
+}
+
+func buildFilter(filter map[string]string) bson.M {
+	bsonFilter := bson.M{}
+
+	if filter["status"] != "" {
+		bsonFilter["status"] = filter["status"]
+	}
+	if filter["name"] != "" {
+		bsonFilter["name"] = filter["name"]
+	}
+	if filter["key_type"] != "" {
+		bsonFilter["pix.key_type"] = filter["key_type"]
+	}
+	if filter["key"] != "" {
+		bsonFilter["pix.key"] = filter["key"]
+	}
+
+	return bsonFilter
 }
 
 func ToModel(entity entity.Receiver) model.Receiver {
