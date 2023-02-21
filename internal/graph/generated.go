@@ -281,7 +281,7 @@ func (ec *executionContext) field_Mutation_createReceiver_args(ctx context.Conte
 	var arg0 NewReceiver
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐNewReceiver(ctx, tmp)
+		arg0, err = ec.unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐNewReceiver(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -370,7 +370,7 @@ func (ec *executionContext) _Mutation_createReceiver(ctx context.Context, field 
 	}
 	res := resTmp.(*Receiver)
 	fc.Result = res
-	return ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx, field.Selections, res)
+	return ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createReceiver(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -532,7 +532,7 @@ func (ec *executionContext) _Query_receivers(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*Receiver)
 	fc.Result = res
-	return ec.marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiverᚄ(ctx, field.Selections, res)
+	return ec.marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiverᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_receivers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -899,7 +899,7 @@ func (ec *executionContext) _Receiver_pix(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*Pix)
 	fc.Result = res
-	return ec.marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐPix(ctx, field.Selections, res)
+	return ec.marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐPix(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Receiver_pix(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2865,7 +2865,7 @@ func (ec *executionContext) unmarshalInputNewReceiver(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"identifier", "name", "email", "pixKeyType", "pixKey"}
+	fieldsInOrder := [...]string{"identifier", "name", "email", "pixKeyType", "pixKey", "bank", "agency", "account"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2909,6 +2909,30 @@ func (ec *executionContext) unmarshalInputNewReceiver(ctx context.Context, obj i
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pixKey"))
 			it.PixKey, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "bank":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bank"))
+			it.Bank, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "agency":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("agency"))
+			it.Agency, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "account":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("account"))
+			it.Account, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3456,12 +3480,12 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐNewReceiver(ctx context.Context, v interface{}) (NewReceiver, error) {
+func (ec *executionContext) unmarshalNNewReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐNewReceiver(ctx context.Context, v interface{}) (NewReceiver, error) {
 	res, err := ec.unmarshalInputNewReceiver(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐPix(ctx context.Context, sel ast.SelectionSet, v *Pix) graphql.Marshaler {
+func (ec *executionContext) marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐPix(ctx context.Context, sel ast.SelectionSet, v *Pix) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3471,11 +3495,11 @@ func (ec *executionContext) marshalNPix2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋg
 	return ec._Pix(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNReceiver2githubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v Receiver) graphql.Marshaler {
 	return ec._Receiver(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiverᚄ(ctx context.Context, sel ast.SelectionSet, v []*Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiverᚄ(ctx context.Context, sel ast.SelectionSet, v []*Receiver) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3499,7 +3523,7 @@ func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransf
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx, sel, v[i])
+			ret[i] = ec.marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3519,7 +3543,7 @@ func (ec *executionContext) marshalNReceiver2ᚕᚖgithubᚗcomᚋtesteᚑtransf
 	return ret
 }
 
-func (ec *executionContext) marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v *Receiver) graphql.Marshaler {
+func (ec *executionContext) marshalNReceiver2ᚖgithubᚗcomᚋtesteᚑtransfeeraᚋinternalᚋgraphᚐReceiver(ctx context.Context, sel ast.SelectionSet, v *Receiver) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

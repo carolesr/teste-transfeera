@@ -7,7 +7,6 @@ package graph
 import (
 	"context"
 
-	"github.com/teste-transfeera/internal/entity"
 	"github.com/teste-transfeera/internal/usecase"
 )
 
@@ -51,16 +50,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-func ToOutput(entity entity.Receiver) *Receiver {
-	return &Receiver{
-		ID:         entity.ID,
-		Name:       entity.Name,
-		Email:      entity.Email,
-		Identifier: entity.Identifier,
-		Pix: &Pix{
-			KeyType: string(entity.Pix.KeyType),
-			Key:     entity.Pix.Key,
-		},
-	}
-}

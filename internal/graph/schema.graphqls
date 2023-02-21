@@ -3,7 +3,7 @@
 # https://gqlgen.com/getting-started/
 
 type Receiver {
-  id:         String!
+  	id:         String!
 	identifier: String!
 	name:      	String!
 	email:      String!
@@ -20,11 +20,14 @@ type Pix {
 }
 
 input NewReceiver {
-  identifier: String!
-	name:      String!
+  	identifier: String!
+	name:       String!
 	email:      String!
-	pixKeyType: 		String!
-	pixKey: 		String!
+	pixKeyType: String!
+	pixKey: 	String!
+	bank:       String
+	agency:     String
+	account:    String
 }
 
 type Query {
