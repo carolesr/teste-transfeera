@@ -20,9 +20,7 @@ type Pix struct {
 }
 
 func GetKeyType(keyType string) (PixKeyType, error) {
-	fmt.Println("GetKeyType: ", keyType)
 	t, ok := mapKeyType[keyType]
-	fmt.Println("t: ", t)
 	if !ok {
 		err := fmt.Errorf("Type not found")
 		return "", err

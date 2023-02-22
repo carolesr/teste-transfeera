@@ -19,6 +19,9 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		Identifier: input.Identifier,
 		PixKeyType: string(input.PixKeyType),
 		PixKey:     input.PixKey,
+		Bank:       input.Bank,
+		Agency:     input.Agency,
+		Account:    input.Account,
 	}
 
 	result, err := r.ReceiverUseCases.Create(usecaseInput)

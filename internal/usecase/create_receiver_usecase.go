@@ -19,7 +19,6 @@ type CreateReceiverInput struct {
 }
 
 func (u *receiverUseCase) Create(input *CreateReceiverInput) (*entity.Receiver, error) {
-
 	validator := validator.New()
 	validator.RegisterValidation("validateIdentifier", validateIdentifier)
 	validator.RegisterValidation("validateEmail", validateEmail)
