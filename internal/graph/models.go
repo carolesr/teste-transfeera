@@ -31,9 +31,9 @@ type Pix struct {
 
 type Receiver struct {
 	ID         string  `json:"id"`
-	Identifier string  `json:"identifier"`
 	Name       string  `json:"name"`
 	Email      string  `json:"email"`
+	Identifier string  `json:"identifier"`
 	Pix        *Pix    `json:"pix"`
 	Bank       *string `json:"bank"`
 	Agency     *string `json:"agency"`

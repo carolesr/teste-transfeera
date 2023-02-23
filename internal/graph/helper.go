@@ -29,11 +29,11 @@ func decodeBase64(cursor string) (string, error) {
 	return string(b), nil
 }
 
-func encodeBase64(cursor []byte) string {
+func EncodeBase64(cursor []byte) string {
 	return base64.StdEncoding.EncodeToString(cursor)
 }
 
-func buildFilter(status *string, name *string, keyType *string, key *string) map[string]string {
+func BuildFilter(status *string, name *string, keyType *string, key *string) map[string]string {
 	filter := make(map[string]string)
 
 	if status != nil {

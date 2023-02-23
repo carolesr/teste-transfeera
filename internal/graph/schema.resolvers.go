@@ -40,7 +40,7 @@ func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, err
 
 // ListReceivers is the resolver for the listReceivers field.
 func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *string, status *string, name *string, keyType *string, key *string) (*Receivers, error) {
-	filter := buildFilter(status, name, keyType, key)
+	filter := BuildFilter(status, name, keyType, key)
 	receivers, err := r.ReceiverUseCases.List(filter)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 
 		if isInCurrentPage && !hasReachedTotalPerPage {
 			edges[count] = &Edge{
-				Cursor: encodeBase64([]byte(receiver.ID)),
+				Cursor: EncodeBase64([]byte(receiver.ID)),
 				Node:   toOutput(receiver),
 			}
 			count++
@@ -92,8 +92,8 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 	}
 
 	pageInfo := PageInfo{
-		StartCursor: encodeBase64([]byte(edges[0].Node.ID)),
-		EndCursor:   encodeBase64([]byte(edges[count-1].Node.ID)),
+		StartCursor: EncodeBase64([]byte(edges[0].Node.ID)),
+		EndCursor:   EncodeBase64([]byte(edges[count-1].Node.ID)),
 		HasNextPage: &hasNextPage,
 	}
 
