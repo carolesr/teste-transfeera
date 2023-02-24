@@ -29,7 +29,7 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		return nil, err
 	}
 
-	return toOutput(*result), err
+	return toOutput(*result), nil
 }
 
 // Receiver is the resolver for the receiver field.

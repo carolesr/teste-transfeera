@@ -34,20 +34,22 @@ func main() {
 
 	receiverUsecases := usecase.NewReceiverUseCases(receiverRepository)
 
-	// server := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: receiverUsecases}}))
-	// http.Handle("/api/v1", server)
-
-	r := gin.Default()
-	r.POST("/api/v1", graphqlHandler(receiverUsecases))
-	r.Run(port)
+	initServer(port, receiverUsecases)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
+func initServer(port string, receiverUsecases usecase.ReceiverUseCases) {
+	router := gin.Default()
+
+	apiVersion1 := router.Group("api/v1")
+	apiVersion1.POST("/receiver", graphqlHandler(receiverUsecases))
+
+	router.Run(port)
+}
+
 func graphqlHandler(receiverUsecases usecase.ReceiverUseCases) gin.HandlerFunc {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: receiverUsecases}}))
 
 	return func(c *gin.Context) {
