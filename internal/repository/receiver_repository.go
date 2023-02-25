@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/teste-transfeera/internal/entity"
 	"github.com/teste-transfeera/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,6 +15,7 @@ import (
 type ReceiverRepository interface {
 	Create(receiver entity.Receiver) (*entity.Receiver, error)
 	List(filter map[string]string) ([]entity.Receiver, error)
+	FindById(id string) (*entity.Receiver, error)
 }
 
 type receiverRepository struct {
@@ -33,7 +34,7 @@ func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver,
 	model := ToModel(receiver)
 	model.CreatedAt = time.Now()
 	model.UpdatedAt = time.Now()
-	model.ID = uuid.New()
+	model.ID = primitive.NewObjectID()
 
 	_, err := r.collection.InsertOne(r.ctx, &model)
 	if err != nil {
@@ -72,6 +73,26 @@ func (r *receiverRepository) List(filter map[string]string) ([]entity.Receiver, 
 	cursor.Close(r.ctx)
 
 	return receivers, nil
+}
+
+func (r *receiverRepository) FindById(id string) (*entity.Receiver, error) {
+	docID, err := primitive.ObjectIDFromHex(id)
+	bsonFilter := bson.M{"_id": docID}
+
+	result := r.collection.FindOne(r.ctx, bsonFilter)
+
+	var receiver model.Receiver
+	err = result.Decode(&receiver)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := result.Err(); err != nil {
+		return nil, err
+	}
+
+	entity := receiver.ToEntity()
+	return &entity, nil
 }
 
 func buildFilter(filter map[string]string) bson.M {

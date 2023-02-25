@@ -189,6 +189,140 @@ func Test_Resolvers_CreateReceiver_Error(t *testing.T) {
 	})
 }
 
+func Test_Resolvers_Receiver_Success(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve Receiver successfully", func(t *testing.T) {
+		// Arrange
+		id := "63f8c8d6c6ce914b5b00b88e"
+		mockInput := &usecase.ListReceiverByIdInput{
+			Id: id,
+		}
+		mockOutput := &entity.Receiver{
+			ID:         id,
+			Identifier: "111.111.111-11",
+			Name:       "Receiver 1",
+			Email:      "RECEIVER1@GMAIL.COM",
+			Status:     entity.Draft,
+			Pix: entity.Pix{
+				KeyType: entity.CPF,
+				Key:     "111.111.111-11",
+			},
+		}
+
+		expectedResult := graph.Receiver{
+			ID:         id,
+			Name:       "Receiver 1",
+			Email:      "RECEIVER1@GMAIL.COM",
+			Identifier: "111.111.111-11",
+			Pix: &graph.Pix{
+				KeyType: "CPF",
+				Key:     "111.111.111-11",
+			},
+		}
+		var result struct {
+			Data struct {
+				Receiver graph.Receiver `json:"receiver"`
+			} `json:"data"`
+		}
+		result.Data.Receiver = expectedResult
+		expectedResultBytes, err := json.Marshal(result)
+
+		useCase.On("ListById", mockInput).Return(mockOutput, nil).Once()
+
+		// Act
+		query := `
+			query receiver {
+				receiver(id: "%s") {
+					id
+					name
+					email
+					identifier
+					pix {
+						keyType
+						key
+					}
+					bank
+					agency
+					account
+					status
+				}
+			}
+		`
+		query = fmt.Sprintf(query, id)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResultBytes, rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+}
+
+func Test_Resolvers_Receiver_Error(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve Receiver with error from usecase", func(t *testing.T) {
+		// Arrange
+		id := "63f8c8d6c6ce914b5b00b88e"
+		mockInput := &usecase.ListReceiverByIdInput{
+			Id: id,
+		}
+		expectedError := `{"errors":[{"message":"error","path":["receiver"]}],"data":{"receiver":null}}`
+
+		useCase.On("ListById", mockInput).Return(nil, errors.New("error")).Once()
+
+		// Act
+		query := `
+			query receiver {
+				receiver(id: "%s") {
+					id
+					name
+					email
+					identifier
+					pix {
+						keyType
+						key
+					}
+					bank
+					agency
+					account
+					status
+				}
+			}
+		`
+		query = fmt.Sprintf(query, id)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(expectedError), rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+}
+
 func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 	useCase := &mocks.ReceiverUseCases{}
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))

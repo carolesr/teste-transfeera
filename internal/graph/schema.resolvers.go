@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/teste-transfeera/internal/usecase"
 )
@@ -34,8 +33,16 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 
 // Receiver is the resolver for the receiver field.
 func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, error) {
-	fmt.Println("Receiver queryResolver")
-	panic(fmt.Errorf("not implemented: Receiver - receiver"))
+	usecaseInput := &usecase.ListReceiverByIdInput{
+		Id: id,
+	}
+
+	result, err := r.ReceiverUseCases.ListById(usecaseInput)
+	if err != nil {
+		return nil, err
+	}
+
+	return toOutput(*result), nil
 }
 
 // ListReceivers is the resolver for the listReceivers field.
