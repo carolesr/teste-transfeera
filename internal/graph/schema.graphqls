@@ -53,5 +53,6 @@ type Query {
 
 type Mutation {
   createReceiver(input: NewReceiver!): Receiver!
+  deleteReceivers(ids: [String!]!): String!
 }
 

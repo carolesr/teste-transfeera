@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teste-transfeera/internal/usecase"
 )
@@ -29,6 +30,21 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 	}
 
 	return toOutput(*result), nil
+}
+
+// DeleteReceivers is the resolver for the deleteReceivers field.
+func (r *mutationResolver) DeleteReceivers(ctx context.Context, ids []string) (string, error) {
+	usecaseInput := &usecase.DeleteReceiverInput{
+		Ids: ids,
+	}
+
+	err := r.ReceiverUseCases.Delete(usecaseInput)
+	if err != nil {
+		return "", err
+	}
+
+	result := fmt.Sprintf("Deleted %s successfully", ids)
+	return result, nil
 }
 
 // Receiver is the resolver for the receiver field.

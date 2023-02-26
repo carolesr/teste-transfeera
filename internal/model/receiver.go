@@ -13,13 +13,13 @@ type Receiver struct {
 	Name       string             `bson:"name"`
 	Email      string             `bson:"email"`
 	Pix        Pix                `bson:"pix"`
-	Bank       *string            `bson:"bank"`
-	Agency     *string            `bson:"agency"`
-	Account    *string            `bson:"account"`
+	Bank       *string            `bson:"bank,omitempty"`
+	Agency     *string            `bson:"agency,omitempty"`
+	Account    *string            `bson:"account,omitempty"`
 	Status     string             `bson:"status"`
 	CreatedAt  time.Time          `bson:"created_at"`
-	UpdatedAt  time.Time          `bson:"updated_at"`
-	DeletedAt  time.Time          `bson:"deleted_at"`
+	UpdatedAt  time.Time          `bson:"updated_at,omitempty"`
+	DeletedAt  time.Time          `bson:"deleted_at,omitempty"`
 }
 
 func (m *Receiver) ToEntity() entity.Receiver {

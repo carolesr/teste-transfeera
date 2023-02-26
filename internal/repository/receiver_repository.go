@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/teste-transfeera/internal/entity"
@@ -16,6 +17,7 @@ type ReceiverRepository interface {
 	Create(receiver entity.Receiver) (*entity.Receiver, error)
 	List(filter map[string]string) ([]entity.Receiver, error)
 	FindById(id string) (*entity.Receiver, error)
+	Delete(ids []string) error
 }
 
 type receiverRepository struct {
@@ -33,7 +35,6 @@ func NewReceiverRepository(collection *mongo.Collection, ctx context.Context) Re
 func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver, error) {
 	model := ToModel(receiver)
 	model.CreatedAt = time.Now()
-	model.UpdatedAt = time.Now()
 	model.ID = primitive.NewObjectID()
 
 	_, err := r.collection.InsertOne(r.ctx, &model)
@@ -47,6 +48,7 @@ func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver,
 
 func (r *receiverRepository) List(filter map[string]string) ([]entity.Receiver, error) {
 	bsonFilter := buildFilter(filter)
+	bsonFilter["deleted_at"] = bson.M{"$exists": false}
 	findOptions := options.Find()
 
 	cursor, err := r.collection.Find(r.ctx, bsonFilter, findOptions)
@@ -77,7 +79,11 @@ func (r *receiverRepository) List(filter map[string]string) ([]entity.Receiver, 
 
 func (r *receiverRepository) FindById(id string) (*entity.Receiver, error) {
 	docID, err := primitive.ObjectIDFromHex(id)
-	bsonFilter := bson.M{"_id": docID}
+	if err != nil {
+		return nil, err
+	}
+
+	bsonFilter := bson.M{"_id": docID, "deleted_at": bson.M{"$exists": false}}
 
 	result := r.collection.FindOne(r.ctx, bsonFilter)
 
@@ -93,6 +99,42 @@ func (r *receiverRepository) FindById(id string) (*entity.Receiver, error) {
 
 	entity := receiver.ToEntity()
 	return &entity, nil
+}
+
+func (r *receiverRepository) Delete(ids []string) error {
+	bsonList := bson.A{}
+	for _, id := range ids {
+		docID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return err
+		}
+		idFilter := bson.M{"_id": docID}
+		bsonList = append(bsonList, idFilter)
+	}
+
+	bsonFilter := bson.M{"$or": bsonList}
+	updater := bson.D{
+		primitive.E{
+			Key: "$set",
+			Value: bson.D{
+				primitive.E{
+					Key:   "deleted_at",
+					Value: time.Now(),
+				},
+			},
+		},
+	}
+
+	result, err := r.collection.UpdateMany(r.ctx, bsonFilter, updater)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("record does not exist")
+	}
+
+	return nil
 }
 
 func buildFilter(filter map[string]string) bson.M {

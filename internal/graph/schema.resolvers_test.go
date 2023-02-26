@@ -91,9 +91,9 @@ func Test_Resolvers_CreateReceiver_Success(t *testing.T) {
 					pixKey: "%s",
 					}) {
 					id
+					identifier
 					name
 					email
-					identifier
 					pix {
 						keyType
 						key
@@ -160,9 +160,9 @@ func Test_Resolvers_CreateReceiver_Error(t *testing.T) {
 					pixKey: "%s",
 					}) {
 					id
+					identifier
 					name
 					email
-					identifier
 					pix {
 						keyType
 						key
@@ -185,6 +185,129 @@ func Test_Resolvers_CreateReceiver_Error(t *testing.T) {
 		// Assert
 		assert.NoError(t, err)
 		assert.Equal(t, []byte(expectedError), rr.Body.Bytes())
+		useCase.AssertExpectations(t)
+	})
+}
+
+func Test_Resolvers_DeleteReceivers_Success(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve DeleteReceivers with one id successfully", func(t *testing.T) {
+		// Arrange
+		mockInput := &usecase.DeleteReceiverInput{
+			Ids: []string{"63f8c8d6c6ce914b5b00b88e"},
+		}
+
+		expectedResult := fmt.Sprintf("Deleted %s successfully", mockInput.Ids)
+		var result struct {
+			Data struct {
+				DeleteReceivers string `json:"deleteReceivers"`
+			} `json:"data"`
+		}
+		result.Data.DeleteReceivers = expectedResult
+		expectedResultBytes, err := json.Marshal(result)
+
+		useCase.On("Delete", mockInput).Return(nil).Once()
+
+		// Act
+		query := `
+			mutation {
+				deleteReceivers(ids: ["63f8c8d6c6ce914b5b00b88e"])
+			}
+		`
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResultBytes, rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+
+	t.Run("Resolve DeleteReceivers with multiple ids successfully", func(t *testing.T) {
+		// Arrange
+		mockInput := &usecase.DeleteReceiverInput{
+			Ids: []string{"63f8c8d6c6ce914b5b00b88e", "63fa9cab2cd4b64463258816"},
+		}
+
+		expectedResult := fmt.Sprintf("Deleted %s successfully", mockInput.Ids)
+		var result struct {
+			Data struct {
+				DeleteReceivers string `json:"deleteReceivers"`
+			} `json:"data"`
+		}
+		result.Data.DeleteReceivers = expectedResult
+		expectedResultBytes, err := json.Marshal(result)
+
+		useCase.On("Delete", mockInput).Return(nil).Once()
+
+		// Act
+		query := `
+			mutation {
+				deleteReceivers(ids: ["63f8c8d6c6ce914b5b00b88e", "63fa9cab2cd4b64463258816"])
+			}
+		`
+		// query = fmt.Sprintf(query, id)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResultBytes, rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+}
+
+func Test_Resolvers_DeleteReceivers_Error(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve DeleteReceivers with error from usecase", func(t *testing.T) {
+		// Arrange
+		mockInput := &usecase.DeleteReceiverInput{
+			Ids: []string{"63f8c8d6c6ce914b5b00b88e"},
+		}
+
+		expectedError := `{"errors":[{"message":"error","path":["deleteReceivers"]}],"data":{"deleteReceivers":""}}`
+
+		useCase.On("Delete", mockInput).Return(errors.New("error")).Once()
+
+		// Act
+		query := `
+			mutation {
+				deleteReceivers(ids: ["63f8c8d6c6ce914b5b00b88e"])
+			}
+		`
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(expectedError), rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
 		useCase.AssertExpectations(t)
 	})
 }
@@ -240,9 +363,9 @@ func Test_Resolvers_Receiver_Success(t *testing.T) {
 			query receiver {
 				receiver(id: "%s") {
 					id
+					identifier
 					name
 					email
-					identifier
 					pix {
 						keyType
 						key
@@ -293,9 +416,9 @@ func Test_Resolvers_Receiver_Error(t *testing.T) {
 			query receiver {
 				receiver(id: "%s") {
 					id
+					identifier
 					name
 					email
-					identifier
 					pix {
 						keyType
 						key
@@ -414,9 +537,9 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 						cursor
 						node {
 							id
+							identifier
 							name
 							email
-							identifier
 							pix {
 								keyType
 								key
@@ -475,9 +598,9 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 						cursor
 						node {
 							id
+							identifier
 							name
 							email
-							identifier
 							pix {
 								keyType
 								key
@@ -640,9 +763,9 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 						cursor
 						node {
 							id
+							identifier
 							name
 							email
-							identifier
 							pix {
 								keyType
 								key
@@ -792,9 +915,9 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 						cursor
 						node {
 							id
+							identifier
 							name
 							email
-							identifier
 							pix {
 								keyType
 								key
@@ -852,9 +975,9 @@ func Test_Resolvers_ListReceivers_Error(t *testing.T) {
 						cursor
 						node {
 							id
+							identifier
 							name
 							email
-							identifier
 							pix {
 								keyType
 								key
