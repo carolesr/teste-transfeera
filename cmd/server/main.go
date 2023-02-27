@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/teste-transfeera/internal/graph"
@@ -45,12 +46,21 @@ func initServer(port string, receiverUsecases usecase.ReceiverUseCases) {
 
 	apiVersion1 := router.Group("api/v1")
 	apiVersion1.POST("/receiver", graphqlHandler(receiverUsecases))
+	apiVersion1.GET("/playground", playgroundHandler())
 
 	router.Run(port)
 }
 
 func graphqlHandler(receiverUsecases usecase.ReceiverUseCases) gin.HandlerFunc {
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: receiverUsecases}}))
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+func playgroundHandler() gin.HandlerFunc {
+	h := playground.Handler("GraphQL playground", "/api/v1/receiver")
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
