@@ -9,6 +9,9 @@ Para a execução desse projeto, é necessário ter instalado:
 - Go versão 1.20
 - Docker
 
+Sistemas Operacionais: Windows e Linux Ubuntu (MacOS não foi validado)
+
+
 ## Setup
 
 1- Instalar dependências
@@ -20,8 +23,10 @@ go mod tidy
 2- Configurar container do banco de dados
 
 ```
-docker-compose up
+docker-compose up -d
 ```
+OBS: no Linux, é necessário executar o comando ```chmod o+w data/``` antes do docker-compose
+
 
 3- Inserção em massa de "seed" de dados iniciais no banco de dados
 
