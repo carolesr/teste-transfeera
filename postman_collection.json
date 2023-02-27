@@ -1,0 +1,150 @@
+{
+	"info": {
+		"_postman_id": "3a39b44a-f1c4-4dec-99c6-9b261bab4084",
+		"name": "teste transfeera",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8475755"
+	},
+	"item": [
+		{
+			"name": "Create Receiver",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation createReceiver($input: NewReceiver!) {\r\n  createReceiver(input: $input) {\r\n    id\r\n    name\r\n    email\r\n    pix {\r\n        keyType\r\n        key\r\n    }\r\n  }\r\n}",
+						"variables": "{\r\n    \"input\": \r\n    {\r\n        \"name\": \"Teste\",\r\n        \"email\": \"TESTE@GMAIL.COM\",\r\n        \"identifier\": \"31.074.372/0001-96\",\r\n        \"pixKeyType\": \"CHAVE_ALEATORIA\",\r\n        \"pixKey\": \"41fcd1dc-ccf5-5ef3-97b8-6254ed1f5dbf\"\r\n    }\r\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/receiver",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"receiver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Receiver",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation updateReceiver($input: UpdateReceiver!) {\r\n  updateReceiver(input: $input)\r\n}",
+						"variables": "{\r\n    \"input\": \r\n    {\r\n        \"id\": \"63fc2126783d668f754c9362\",\r\n        \"name\": \"Testeee\",\r\n        \"email\": \"TESTEEE@GMAIL.COM\",\r\n        \"identifier\": \"732.178.450-99\",\r\n        \"pixKeyType\": \"CPF\",\r\n        \"pixKey\": \"732.178.450-99\"\r\n    }\r\n}"
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/receiver",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"receiver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Receiver By Id",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query receiver {\r\n  receiver(id: \"63fc2126783d668f754c9362\") {\r\n    id\r\n    name\r\n    email\r\n    pix {\r\n        keyType\r\n        key\r\n    }\r\n    status\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/receiver",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"receiver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Receivers",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation deleteReceivers {\r\n  deleteReceivers(ids: [\"63fbbe585c3c3b8ab3a647aa\"])\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/receiver",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"receiver"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Receiver",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query listReceivers {\r\n  listReceivers(first: 10) {\r\n    edges {\r\n        cursor\r\n        node {\r\n            name\r\n            email\r\n            id\r\n            identifier\r\n            status\r\n            bank\r\n            agency\r\n            account\r\n            pix {\r\n                key\r\n                keyType\r\n            }\r\n        }\r\n    }\r\n    pageInfo {\r\n        startCursor\r\n        endCursor\r\n        hasNextPage\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/receiver",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"receiver"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
