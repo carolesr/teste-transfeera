@@ -13,7 +13,7 @@ type UpdateReceiverInput struct {
 	Id         string `validate:"required"`
 	Identifier string `validate:"omitempty,validateIdentifier"`
 	Name       string `validate:"omitempty"`
-	Email      string `validate:"omitempty,validateEmail"`
+	Email      string `validate:"omitempty,max=250,validateEmail"`
 	PixKeyType string `validate:"omitempty"`
 	PixKey     string `validate:"omitempty"`
 }

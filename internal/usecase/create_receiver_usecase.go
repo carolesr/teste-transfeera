@@ -9,7 +9,7 @@ import (
 type CreateReceiverInput struct {
 	Identifier string `validate:"required,validateIdentifier"`
 	Name       string `validate:"required"`
-	Email      string `validate:"required,validateEmail"`
+	Email      string `validate:"required,max=250,validateEmail"`
 	PixKeyType string `validate:"required,validatePixType"`
 	PixKey     string `validate:"required,validatePixKey"`
 }

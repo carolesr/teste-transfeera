@@ -295,6 +295,19 @@ func Test_ReceiverUseCase_Update_Error(t *testing.T) {
 		repository.AssertExpectations(t)
 	})
 
+	t.Run("Update receiver returns error validation error for Email with more than 250 characters", func(t *testing.T) {
+		input := usecase.UpdateReceiverInput{
+			Id:    "63f8c8d6c6ce914b5b00b88e",
+			Email: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@AA",
+		}
+		expectedError := errors.New(`Key: 'UpdateReceiverInput.Email' Error:Field validation for 'Email' failed on the 'max' tag`)
+
+		err := useCase.Update(&input)
+
+		assert.Equal(t, expectedError.Error(), err.Error())
+		repository.AssertExpectations(t)
+	})
+
 	t.Run("Update receiver returns error validation error for Identifier", func(t *testing.T) {
 		input := usecase.UpdateReceiverInput{
 			Id:         "63f8c8d6c6ce914b5b00b88e",

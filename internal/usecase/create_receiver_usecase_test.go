@@ -134,6 +134,22 @@ func Test_ReceiverUseCase_Create_Error(t *testing.T) {
 		repository.AssertExpectations(t)
 	})
 
+	t.Run("Create receiver returns validation error for email with more than 250 characters", func(t *testing.T) {
+		input := usecase.CreateReceiverInput{
+			Identifier: "111.111.111-11",
+			Name:       "Receiver 1",
+			Email:      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA@AA",
+			PixKeyType: "EMAIL",
+			PixKey:     "A@A",
+		}
+		expectedError := errors.New(`Key: 'CreateReceiverInput.Email' Error:Field validation for 'Email' failed on the 'max' tag`)
+		result, err := useCase.Create(&input)
+
+		assert.Equal(t, (*entity.Receiver)(nil), result)
+		assert.Equal(t, expectedError.Error(), err.Error())
+		repository.AssertExpectations(t)
+	})
+
 	t.Run("Create receiver returns validation error for identifier", func(t *testing.T) {
 		input := usecase.CreateReceiverInput{
 			Identifier: "111.111.111-1",
@@ -164,5 +180,4 @@ func Test_ReceiverUseCase_Create_Error(t *testing.T) {
 		assert.Equal(t, expectedError.Error(), err.Error())
 		repository.AssertExpectations(t)
 	})
-
 }
