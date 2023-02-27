@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/teste-transfeera/internal/usecase"
+	"github.com/teste-transfeera/pkg/shared"
 )
 
 // CreateReceiver is the resolver for the createReceiver field.
@@ -48,11 +49,11 @@ func (r *mutationResolver) DeleteReceivers(ctx context.Context, ids []string) (s
 func (r *mutationResolver) UpdateReceiver(ctx context.Context, input UpdateReceiver) (string, error) {
 	usecaseInput := &usecase.UpdateReceiverInput{
 		Id:         input.ID,
-		Name:       GetValueStr(input.Name),
-		Email:      GetValueStr(input.Email),
-		Identifier: GetValueStr(input.Identifier),
-		PixKeyType: GetValueStr(input.PixKeyType),
-		PixKey:     GetValueStr(input.PixKey),
+		Name:       shared.GetValueStr(input.Name),
+		Email:      shared.GetValueStr(input.Email),
+		Identifier: shared.GetValueStr(input.Identifier),
+		PixKeyType: shared.GetValueStr(input.PixKeyType),
+		PixKey:     shared.GetValueStr(input.PixKey),
 	}
 
 	err := r.ReceiverUseCases.Update(usecaseInput)
@@ -101,7 +102,7 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 	isInCurrentPage := true
 	var cursor string
 	if after != nil {
-		cursor, err = DecodeBase64(*after)
+		cursor, err = shared.DecodeBase64(*after)
 		if cursor != "" {
 			isInCurrentPage = false
 		}
@@ -115,7 +116,7 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 
 		if isInCurrentPage && !hasReachedTotalPerPage {
 			edges[count] = &Edge{
-				Cursor: EncodeBase64([]byte(receiver.ID)),
+				Cursor: shared.EncodeBase64([]byte(receiver.ID)),
 				Node:   ToOutput(receiver),
 			}
 			count++
@@ -132,8 +133,8 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 	}
 
 	pageInfo := PageInfo{
-		StartCursor: EncodeBase64([]byte(edges[0].Node.ID)),
-		EndCursor:   EncodeBase64([]byte(edges[count-1].Node.ID)),
+		StartCursor: shared.EncodeBase64([]byte(edges[0].Node.ID)),
+		EndCursor:   shared.EncodeBase64([]byte(edges[count-1].Node.ID)),
 		HasNextPage: &hasNextPage,
 	}
 

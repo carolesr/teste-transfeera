@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/teste-transfeera/internal/entity"
+	"github.com/teste-transfeera/pkg/validation"
 )
 
 type CreateReceiverInput struct {
@@ -15,10 +16,10 @@ type CreateReceiverInput struct {
 
 func (u *receiverUseCase) Create(input *CreateReceiverInput) (*entity.Receiver, error) {
 	validator := validator.New()
-	validator.RegisterValidation("validateIdentifier", validatorIdentifier)
-	validator.RegisterValidation("validateEmail", validatorEmail)
-	validator.RegisterValidation("validatePixType", validatorPixType)
-	validator.RegisterValidation("validatePixKey", validatorPixKey)
+	validator.RegisterValidation("validateIdentifier", validation.ValidatorIdentifier)
+	validator.RegisterValidation("validateEmail", validation.ValidatorEmail)
+	validator.RegisterValidation("validatePixType", validation.ValidatorPixType)
+	validator.RegisterValidation("validatePixKey", validation.ValidatorPixKey)
 
 	err := validator.Struct(input)
 	if err != nil {

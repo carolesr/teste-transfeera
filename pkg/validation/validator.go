@@ -1,4 +1,4 @@
-package usecase
+package validation
 
 import (
 	"regexp"
@@ -7,33 +7,33 @@ import (
 	"github.com/teste-transfeera/internal/entity"
 )
 
-func validatorIdentifier(fl validator.FieldLevel) bool {
-	return validateIdentifier(fl.Field().String())
+func ValidatorIdentifier(fl validator.FieldLevel) bool {
+	return ValidateIdentifier(fl.Field().String())
 }
 
-func validatorEmail(fl validator.FieldLevel) bool {
-	return validateEmail(fl.Field().String())
+func ValidatorEmail(fl validator.FieldLevel) bool {
+	return ValidateEmail(fl.Field().String())
 }
 
-func validatorPixType(fl validator.FieldLevel) bool {
-	return validatePixType(fl.Field().String())
+func ValidatorPixType(fl validator.FieldLevel) bool {
+	return ValidatePixType(fl.Field().String())
 }
 
-func validatorPixKey(fl validator.FieldLevel) bool {
-	return validatePixKey(fl.Field().String(), fl.Parent().FieldByName("PixKeyType").String())
+func ValidatorPixKey(fl validator.FieldLevel) bool {
+	return ValidatePixKey(fl.Field().String(), fl.Parent().FieldByName("PixKeyType").String())
 }
 
-func validateIdentifier(identifier string) bool {
+func ValidateIdentifier(identifier string) bool {
 	pattern := regexp.MustCompile(`^[0-9]{3}[\.]?[0-9]{3}[\.]?[0-9]{3}[-]?[0-9]{2}|[0-9]{2}[\.]?[0-9]{3}[\.]?[0-9]{3}[\/]?[0-9]{4}[-]?[0-9]{2}$`)
 	return pattern.MatchString(identifier)
 }
 
-func validateEmail(email string) bool {
+func ValidateEmail(email string) bool {
 	pattern := regexp.MustCompile(`^[A-Z0-9+_.-]+@[A-Z0-9.-]+$`)
 	return pattern.MatchString(email)
 }
 
-func validatePixType(keyType string) bool {
+func ValidatePixType(keyType string) bool {
 	if _, err := entity.GetKeyType(keyType); err != nil {
 		return false
 	}
@@ -41,7 +41,7 @@ func validatePixType(keyType string) bool {
 	return true
 }
 
-func validatePixKey(key string, keyTypeStr string) bool {
+func ValidatePixKey(key string, keyTypeStr string) bool {
 	keyType, err := entity.GetKeyType(keyTypeStr)
 	if err != nil {
 		return false
@@ -57,14 +57,14 @@ func validatePixKey(key string, keyTypeStr string) bool {
 		return pattern.MatchString(key)
 
 	case entity.Email:
-		return validateEmail(key)
+		return ValidateEmail(key)
 
 	case entity.Phone:
 		pattern := regexp.MustCompile(`^((?:\+?55)?)([1-9][0-9])(9[0-9]{8})$`)
 		return pattern.MatchString(key)
 
 	case entity.RandomKey:
-		pattern := regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i`)
+		pattern := regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 		return pattern.MatchString(key)
 	}
 

@@ -17,6 +17,7 @@ import (
 	"github.com/teste-transfeera/internal/graph"
 	"github.com/teste-transfeera/internal/usecase"
 	"github.com/teste-transfeera/mocks"
+	"github.com/teste-transfeera/pkg/shared"
 )
 
 type graphQLRequest struct {
@@ -69,7 +70,7 @@ func Test_Resolvers_CreateReceiver_Success(t *testing.T) {
 				KeyType: "CPF",
 				Key:     "111.111.111-11",
 			},
-			Status: graph.GetPointerStr(string(entity.Draft)),
+			Status: shared.GetPointerStr(string(entity.Draft)),
 		}
 		var result struct {
 			Data struct {
@@ -325,11 +326,11 @@ func Test_Resolvers_UpdateReceiver_Success(t *testing.T) {
 		// Arrange
 		input := graph.UpdateReceiver{
 			ID:   "63fbbe585c3c3b8ab3a647aa",
-			Name: graph.GetPointerStr("Receiver 1"),
+			Name: shared.GetPointerStr("Receiver 1"),
 		}
 		mockInput := &usecase.UpdateReceiverInput{
 			Id:   input.ID,
-			Name: graph.GetValueStr(input.Name),
+			Name: shared.GetValueStr(input.Name),
 		}
 
 		expectedResult := fmt.Sprintf("Updated %s successfully", mockInput.Id)
@@ -371,19 +372,19 @@ func Test_Resolvers_UpdateReceiver_Success(t *testing.T) {
 		// Arrange
 		input := graph.UpdateReceiver{
 			ID:         "63fbbe585c3c3b8ab3a647aa",
-			Identifier: graph.GetPointerStr("111.111.111-11"),
-			Name:       graph.GetPointerStr("Receiver 1"),
-			Email:      graph.GetPointerStr("RECEIVER1@GMAIL.COM"),
-			PixKeyType: graph.GetPointerStr("CPF"),
-			PixKey:     graph.GetPointerStr("111.111.111-11"),
+			Identifier: shared.GetPointerStr("111.111.111-11"),
+			Name:       shared.GetPointerStr("Receiver 1"),
+			Email:      shared.GetPointerStr("RECEIVER1@GMAIL.COM"),
+			PixKeyType: shared.GetPointerStr("CPF"),
+			PixKey:     shared.GetPointerStr("111.111.111-11"),
 		}
 		mockInput := &usecase.UpdateReceiverInput{
 			Id:         input.ID,
-			Identifier: graph.GetValueStr(input.Identifier),
-			Name:       graph.GetValueStr(input.Name),
-			Email:      graph.GetValueStr(input.Email),
-			PixKeyType: graph.GetValueStr(input.PixKeyType),
-			PixKey:     graph.GetValueStr(input.PixKey),
+			Identifier: shared.GetValueStr(input.Identifier),
+			Name:       shared.GetValueStr(input.Name),
+			Email:      shared.GetValueStr(input.Email),
+			PixKeyType: shared.GetValueStr(input.PixKeyType),
+			PixKey:     shared.GetValueStr(input.PixKey),
 		}
 
 		expectedResult := fmt.Sprintf("Updated %s successfully", mockInput.Id)
@@ -438,11 +439,11 @@ func Test_Resolvers_UpdateReceiver_Error(t *testing.T) {
 		// Arrange
 		input := graph.UpdateReceiver{
 			ID:   "63fbbe585c3c3b8ab3a647aa",
-			Name: graph.GetPointerStr("Receiver 1"),
+			Name: shared.GetPointerStr("Receiver 1"),
 		}
 		mockInput := &usecase.UpdateReceiverInput{
 			Id:   input.ID,
-			Name: graph.GetValueStr(input.Name),
+			Name: shared.GetValueStr(input.Name),
 		}
 
 		expectedError := `{"errors":[{"message":"error","path":["updateReceiver"]}],"data":{"updateReceiver":""}}`
@@ -509,7 +510,7 @@ func Test_Resolvers_Receiver_Success(t *testing.T) {
 				KeyType: "CPF",
 				Key:     "111.111.111-11",
 			},
-			Status: graph.GetPointerStr(string(entity.Draft)),
+			Status: shared.GetPointerStr(string(entity.Draft)),
 		}
 		var result struct {
 			Data struct {
@@ -650,7 +651,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 		expectedResult := &graph.Receivers{
 			Edges: []*graph.Edge{
 				{
-					Cursor: graph.EncodeBase64([]byte(id1)),
+					Cursor: shared.EncodeBase64([]byte(id1)),
 					Node: &graph.Receiver{
 						ID:         id1,
 						Identifier: "111.111.111-11",
@@ -660,11 +661,11 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "111.111.111-11",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
-					Cursor: graph.EncodeBase64([]byte(id2)),
+					Cursor: shared.EncodeBase64([]byte(id2)),
 					Node: &graph.Receiver{
 						ID:         id2,
 						Identifier: "222.222.222-22",
@@ -674,13 +675,13 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "222.222.222-22",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},
 			PageInfo: &graph.PageInfo{
-				StartCursor: graph.EncodeBase64([]byte(id1)),
-				EndCursor:   graph.EncodeBase64([]byte(id2)),
+				StartCursor: shared.EncodeBase64([]byte(id1)),
+				EndCursor:   shared.EncodeBase64([]byte(id2)),
 				HasNextPage: &b,
 			},
 		}
@@ -865,7 +866,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 		expectedResult := &graph.Receivers{
 			Edges: []*graph.Edge{
 				{
-					Cursor: graph.EncodeBase64([]byte(id1)),
+					Cursor: shared.EncodeBase64([]byte(id1)),
 					Node: &graph.Receiver{
 						ID:         id1,
 						Identifier: "111.111.111-11",
@@ -875,11 +876,11 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "111.111.111-11",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
-					Cursor: graph.EncodeBase64([]byte(id2)),
+					Cursor: shared.EncodeBase64([]byte(id2)),
 					Node: &graph.Receiver{
 						ID:         id2,
 						Identifier: "222.222.222-22",
@@ -889,11 +890,11 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "222.222.222-22",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
-					Cursor: graph.EncodeBase64([]byte(id3)),
+					Cursor: shared.EncodeBase64([]byte(id3)),
 					Node: &graph.Receiver{
 						ID:         id3,
 						Identifier: "333.333.333-33",
@@ -903,13 +904,13 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "333.333.333-33",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},
 			PageInfo: &graph.PageInfo{
-				StartCursor: graph.EncodeBase64([]byte(id1)),
-				EndCursor:   graph.EncodeBase64([]byte(id3)),
+				StartCursor: shared.EncodeBase64([]byte(id1)),
+				EndCursor:   shared.EncodeBase64([]byte(id3)),
 				HasNextPage: &b,
 			},
 		}
@@ -1033,7 +1034,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 		expectedResult := &graph.Receivers{
 			Edges: []*graph.Edge{
 				{
-					Cursor: graph.EncodeBase64([]byte(id4)),
+					Cursor: shared.EncodeBase64([]byte(id4)),
 					Node: &graph.Receiver{
 						ID:         id4,
 						Identifier: "444.444.444-44",
@@ -1043,11 +1044,11 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "444.444.444-44",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
-					Cursor: graph.EncodeBase64([]byte(id5)),
+					Cursor: shared.EncodeBase64([]byte(id5)),
 					Node: &graph.Receiver{
 						ID:         id5,
 						Identifier: "555.555.555-55",
@@ -1057,13 +1058,13 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "555.555.555-55",
 						},
-						Status: graph.GetPointerStr(string(entity.Draft)),
+						Status: shared.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},
 			PageInfo: &graph.PageInfo{
-				StartCursor: graph.EncodeBase64([]byte(id4)),
-				EndCursor:   graph.EncodeBase64([]byte(id5)),
+				StartCursor: shared.EncodeBase64([]byte(id4)),
+				EndCursor:   shared.EncodeBase64([]byte(id5)),
 				HasNextPage: &b,
 			},
 		}
@@ -1106,7 +1107,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 				}
 			}
 		`
-		query = fmt.Sprintf(query, graph.EncodeBase64([]byte(id3)))
+		query = fmt.Sprintf(query, shared.EncodeBase64([]byte(id3)))
 		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
 
 		rr := httptest.NewRecorder()

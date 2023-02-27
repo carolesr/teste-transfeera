@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/teste-transfeera/internal/entity"
+	"github.com/teste-transfeera/pkg/validation"
 )
 
 type UpdateReceiverInput struct {
@@ -19,8 +20,8 @@ type UpdateReceiverInput struct {
 
 func (u *receiverUseCase) Update(input *UpdateReceiverInput) error {
 	validator := validator.New()
-	validator.RegisterValidation("validateIdentifier", validatorIdentifier)
-	validator.RegisterValidation("validateEmail", validatorEmail)
+	validator.RegisterValidation("validateIdentifier", validation.ValidatorIdentifier)
+	validator.RegisterValidation("validateEmail", validation.ValidatorEmail)
 
 	err := validator.Struct(input)
 	if err != nil {
@@ -52,10 +53,10 @@ func (u *receiverUseCase) Update(input *UpdateReceiverInput) error {
 func validatePix(input *UpdateReceiverInput, receiver *entity.Receiver) error {
 	bothKeyAndTypeChanged := input.PixKeyType != "" && input.PixKey != ""
 	if bothKeyAndTypeChanged {
-		if !validatePixType(input.PixKeyType) {
+		if !validation.ValidatePixType(input.PixKeyType) {
 			return errors.New("Invalid Pix Key Type")
 		}
-		if !validatePixKey(input.PixKey, input.PixKeyType) {
+		if !validation.ValidatePixKey(input.PixKey, input.PixKeyType) {
 			return errors.New(fmt.Sprintf("Invalid Pix Key for %s Key Type", input.PixKeyType))
 		}
 		return nil
@@ -63,7 +64,7 @@ func validatePix(input *UpdateReceiverInput, receiver *entity.Receiver) error {
 
 	onlyKeyChanged := input.PixKey != ""
 	if onlyKeyChanged {
-		if !validatePixKey(input.PixKey, string(receiver.Pix.KeyType)) {
+		if !validation.ValidatePixKey(input.PixKey, string(receiver.Pix.KeyType)) {
 			return errors.New(fmt.Sprintf("Invalid Pix Key for %s Key Type", receiver.Pix.KeyType))
 		}
 		return nil
