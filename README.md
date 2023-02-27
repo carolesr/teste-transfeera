@@ -2,6 +2,13 @@
 
 [Especificações do projeto](https://docs.google.com/document/d/1cSVj8EK7x2tfhr0IXn9shEAMRVRzRe5VHC-AjJUTWlk/edit#)
 
+## Dependências
+
+Para a execução desse projeto, é necessário ter instalado:
+
+- Go versão 1.20
+- Docker
+
 ## Setup
 
 1- Instalar dependências
