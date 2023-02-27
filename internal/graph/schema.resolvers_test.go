@@ -69,6 +69,7 @@ func Test_Resolvers_CreateReceiver_Success(t *testing.T) {
 				KeyType: "CPF",
 				Key:     "111.111.111-11",
 			},
+			Status: graph.GetPointerStr(string(entity.Draft)),
 		}
 		var result struct {
 			Data struct {
@@ -312,6 +313,167 @@ func Test_Resolvers_DeleteReceivers_Error(t *testing.T) {
 	})
 }
 
+func Test_Resolvers_UpdateReceiver_Success(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve UpdateReceiver successfully with one field", func(t *testing.T) {
+		// Arrange
+		input := graph.UpdateReceiver{
+			ID:   "63fbbe585c3c3b8ab3a647aa",
+			Name: graph.GetPointerStr("Receiver 1"),
+		}
+		mockInput := &usecase.UpdateReceiverInput{
+			Id:   input.ID,
+			Name: graph.GetValueStr(input.Name),
+		}
+
+		expectedResult := fmt.Sprintf("Updated %s successfully", mockInput.Id)
+		var result struct {
+			Data struct {
+				UpdateReceiver string `json:"updateReceiver"`
+			} `json:"data"`
+		}
+		result.Data.UpdateReceiver = expectedResult
+		expectedResultBytes, err := json.Marshal(result)
+
+		useCase.On("Update", mockInput).Return(nil).Once()
+
+		// Act
+		query := `
+			mutation {
+				updateReceiver(input: {
+					id: "%s",
+					name: "%s"
+					})
+			}
+		`
+		query = fmt.Sprintf(query, mockInput.Id, mockInput.Name)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResultBytes, rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+
+	t.Run("Resolve UpdateReceiver successfully with all fields", func(t *testing.T) {
+		// Arrange
+		input := graph.UpdateReceiver{
+			ID:         "63fbbe585c3c3b8ab3a647aa",
+			Identifier: graph.GetPointerStr("111.111.111-11"),
+			Name:       graph.GetPointerStr("Receiver 1"),
+			Email:      graph.GetPointerStr("RECEIVER1@GMAIL.COM"),
+			PixKeyType: graph.GetPointerStr("CPF"),
+			PixKey:     graph.GetPointerStr("111.111.111-11"),
+		}
+		mockInput := &usecase.UpdateReceiverInput{
+			Id:         input.ID,
+			Identifier: graph.GetValueStr(input.Identifier),
+			Name:       graph.GetValueStr(input.Name),
+			Email:      graph.GetValueStr(input.Email),
+			PixKeyType: graph.GetValueStr(input.PixKeyType),
+			PixKey:     graph.GetValueStr(input.PixKey),
+		}
+
+		expectedResult := fmt.Sprintf("Updated %s successfully", mockInput.Id)
+		var result struct {
+			Data struct {
+				UpdateReceiver string `json:"updateReceiver"`
+			} `json:"data"`
+		}
+		result.Data.UpdateReceiver = expectedResult
+		expectedResultBytes, err := json.Marshal(result)
+
+		useCase.On("Update", mockInput).Return(nil).Once()
+
+		// Act
+		query := `
+			mutation {
+				updateReceiver(input: {
+					id: "%s",
+					name: "%s",
+					email: "%s",
+					identifier: "%s",
+					pixKeyType: "%s",
+					pixKey: "%s",
+					})
+			}
+		`
+		query = fmt.Sprintf(query, mockInput.Id, mockInput.Name, mockInput.Email, mockInput.Identifier, mockInput.PixKeyType, mockInput.PixKey)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResultBytes, rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+}
+
+func Test_Resolvers_UpdateReceiver_Error(t *testing.T) {
+	useCase := &mocks.ReceiverUseCases{}
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
+	router := gin.Default()
+	router.POST("/api/v1/receiver", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+	t.Run("Resolve UpdateReceiver with error from usecase", func(t *testing.T) {
+		// Arrange
+		input := graph.UpdateReceiver{
+			ID:   "63fbbe585c3c3b8ab3a647aa",
+			Name: graph.GetPointerStr("Receiver 1"),
+		}
+		mockInput := &usecase.UpdateReceiverInput{
+			Id:   input.ID,
+			Name: graph.GetValueStr(input.Name),
+		}
+
+		expectedError := `{"errors":[{"message":"error","path":["updateReceiver"]}],"data":{"updateReceiver":""}}`
+
+		useCase.On("Update", mockInput).Return(errors.New("error")).Once()
+
+		// Act
+		query := `
+			mutation {
+				updateReceiver(input: {
+					id: "%s",
+					name: "%s"
+					})
+			}
+		`
+		query = fmt.Sprintf(query, mockInput.Id, mockInput.Name)
+		gqlMarshalled, err := json.Marshal(graphQLRequest{Query: query})
+
+		rr := httptest.NewRecorder()
+		req, err := http.NewRequest(http.MethodPost, "/api/v1/receiver", strings.NewReader(string(gqlMarshalled)))
+		req.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(rr, req)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, []byte(expectedError), rr.Body.Bytes())
+		assert.Equal(t, http.StatusOK, rr.Code)
+		useCase.AssertExpectations(t)
+	})
+}
+
 func Test_Resolvers_Receiver_Success(t *testing.T) {
 	useCase := &mocks.ReceiverUseCases{}
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{ReceiverUseCases: useCase}}))
@@ -347,6 +509,7 @@ func Test_Resolvers_Receiver_Success(t *testing.T) {
 				KeyType: "CPF",
 				Key:     "111.111.111-11",
 			},
+			Status: graph.GetPointerStr(string(entity.Draft)),
 		}
 		var result struct {
 			Data struct {
@@ -497,6 +660,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "111.111.111-11",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
@@ -510,6 +674,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "222.222.222-22",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},
@@ -710,6 +875,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "111.111.111-11",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
@@ -723,6 +889,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "222.222.222-22",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
@@ -736,6 +903,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "333.333.333-33",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},
@@ -875,6 +1043,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "444.444.444-44",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 				{
@@ -888,6 +1057,7 @@ func Test_Resolvers_ListReceivers_Success(t *testing.T) {
 							KeyType: "CPF",
 							Key:     "555.555.555-55",
 						},
+						Status: graph.GetPointerStr(string(entity.Draft)),
 					},
 				},
 			},

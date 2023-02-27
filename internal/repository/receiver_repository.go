@@ -17,6 +17,7 @@ type ReceiverRepository interface {
 	Create(receiver entity.Receiver) (*entity.Receiver, error)
 	List(filter map[string]string) ([]entity.Receiver, error)
 	FindById(id string) (*entity.Receiver, error)
+	Update(id string, fields map[string]string) error
 	Delete(ids []string) error
 }
 
@@ -33,9 +34,18 @@ func NewReceiverRepository(collection *mongo.Collection, ctx context.Context) Re
 }
 
 func (r *receiverRepository) Create(receiver entity.Receiver) (*entity.Receiver, error) {
-	model := ToModel(receiver)
-	model.CreatedAt = time.Now()
-	model.ID = primitive.NewObjectID()
+	model := model.Receiver{
+		ID:         primitive.NewObjectID(),
+		Identifier: receiver.Identifier,
+		Name:       receiver.Name,
+		Email:      receiver.Email,
+		Pix: model.Pix{
+			KeyType: string(receiver.Pix.KeyType),
+			Key:     receiver.Pix.Key,
+		},
+		Status:    string(receiver.Status),
+		CreatedAt: time.Now(),
+	}
 
 	_, err := r.collection.InsertOne(r.ctx, &model)
 	if err != nil {
@@ -101,6 +111,25 @@ func (r *receiverRepository) FindById(id string) (*entity.Receiver, error) {
 	return &entity, nil
 }
 
+func (r *receiverRepository) Update(id string, fields map[string]string) error {
+	docID, err := primitive.ObjectIDFromHex(id)
+	bsonFilter := bson.M{"_id": docID}
+	updater := bson.D{
+		{"$set", buildUpdate(fields)},
+	}
+
+	result, err := r.collection.UpdateOne(r.ctx, bsonFilter, updater)
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New("record does not exist")
+	}
+
+	return nil
+}
+
 func (r *receiverRepository) Delete(ids []string) error {
 	bsonList := bson.A{}
 	for _, id := range ids {
@@ -156,18 +185,26 @@ func buildFilter(filter map[string]string) bson.M {
 	return bsonFilter
 }
 
-func ToModel(entity entity.Receiver) model.Receiver {
-	return model.Receiver{
-		Identifier: entity.Identifier,
-		Name:       entity.Name,
-		Email:      entity.Email,
-		Pix: model.Pix{
-			KeyType: string(entity.Pix.KeyType),
-			Key:     entity.Pix.Key,
-		},
-		Bank:    entity.Bank,
-		Agency:  entity.Agency,
-		Account: entity.Account,
-		Status:  string(entity.Status),
+func buildUpdate(fields map[string]string) bson.D {
+	var bsonUpdate bson.D
+
+	if fields["identifier"] != "" {
+		bsonUpdate = append(bsonUpdate, primitive.E{"identifier", fields["identifier"]})
 	}
+	if fields["name"] != "" {
+		bsonUpdate = append(bsonUpdate, primitive.E{"name", fields["name"]})
+	}
+	if fields["email"] != "" {
+		bsonUpdate = append(bsonUpdate, primitive.E{"email", fields["email"]})
+	}
+	if fields["key_type"] != "" {
+		bsonUpdate = append(bsonUpdate, primitive.E{"pix.key_type", fields["key_type"]})
+	}
+	if fields["key"] != "" {
+		bsonUpdate = append(bsonUpdate, primitive.E{"pix.key", fields["key"]})
+	}
+
+	bsonUpdate = append(bsonUpdate, primitive.E{"updated_at", time.Now()})
+
+	return bsonUpdate
 }

@@ -8,7 +8,7 @@ import (
 
 const TOTAL_PER_PAGE int = 10
 
-func toOutput(entity entity.Receiver) *Receiver {
+func ToOutput(entity entity.Receiver) *Receiver {
 	return &Receiver{
 		ID:         entity.ID,
 		Name:       entity.Name,
@@ -18,10 +18,25 @@ func toOutput(entity entity.Receiver) *Receiver {
 			KeyType: string(entity.Pix.KeyType),
 			Key:     entity.Pix.Key,
 		},
+		Bank:    entity.Bank,
+		Agency:  entity.Agency,
+		Account: entity.Account,
+		Status:  (*string)(&entity.Status),
 	}
 }
 
-func decodeBase64(cursor string) (string, error) {
+func GetValueStr(ptr *string) string {
+	if ptr != nil {
+		return *ptr
+	}
+	return ""
+}
+
+func GetPointerStr(s string) *string {
+	return &s
+}
+
+func DecodeBase64(cursor string) (string, error) {
 	b, err := base64.StdEncoding.DecodeString(cursor)
 	if err != nil {
 		return "", err

@@ -8,14 +8,11 @@ type Edge struct {
 }
 
 type NewReceiver struct {
-	Identifier string  `json:"identifier"`
-	Name       string  `json:"name"`
-	Email      string  `json:"email"`
-	PixKeyType string  `json:"pixKeyType"`
-	PixKey     string  `json:"pixKey"`
-	Bank       *string `json:"bank"`
-	Agency     *string `json:"agency"`
-	Account    *string `json:"account"`
+	Identifier string `json:"identifier"`
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	PixKeyType string `json:"pixKeyType"`
+	PixKey     string `json:"pixKey"`
 }
 
 type PageInfo struct {
@@ -44,4 +41,13 @@ type Receiver struct {
 type Receivers struct {
 	Edges    []*Edge   `json:"edges"`
 	PageInfo *PageInfo `json:"pageInfo"`
+}
+
+type UpdateReceiver struct {
+	ID         string  `json:"id"`
+	Identifier *string `json:"identifier"`
+	Name       *string `json:"name"`
+	Email      *string `json:"email"`
+	PixKeyType *string `json:"pixKeyType"`
+	PixKey     *string `json:"pixKey"`
 }

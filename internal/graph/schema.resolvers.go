@@ -17,11 +17,8 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		Name:       input.Name,
 		Email:      input.Email,
 		Identifier: input.Identifier,
-		PixKeyType: string(input.PixKeyType),
+		PixKeyType: input.PixKeyType,
 		PixKey:     input.PixKey,
-		Bank:       input.Bank,
-		Agency:     input.Agency,
-		Account:    input.Account,
 	}
 
 	result, err := r.ReceiverUseCases.Create(usecaseInput)
@@ -29,7 +26,7 @@ func (r *mutationResolver) CreateReceiver(ctx context.Context, input NewReceiver
 		return nil, err
 	}
 
-	return toOutput(*result), nil
+	return ToOutput(*result), nil
 }
 
 // DeleteReceivers is the resolver for the deleteReceivers field.
@@ -47,6 +44,26 @@ func (r *mutationResolver) DeleteReceivers(ctx context.Context, ids []string) (s
 	return result, nil
 }
 
+// UpdateReceiver is the resolver for the updateReceiver field.
+func (r *mutationResolver) UpdateReceiver(ctx context.Context, input UpdateReceiver) (string, error) {
+	usecaseInput := &usecase.UpdateReceiverInput{
+		Id:         input.ID,
+		Name:       GetValueStr(input.Name),
+		Email:      GetValueStr(input.Email),
+		Identifier: GetValueStr(input.Identifier),
+		PixKeyType: GetValueStr(input.PixKeyType),
+		PixKey:     GetValueStr(input.PixKey),
+	}
+
+	err := r.ReceiverUseCases.Update(usecaseInput)
+	if err != nil {
+		return "", err
+	}
+
+	result := fmt.Sprintf("Updated %s successfully", input.ID)
+	return result, nil
+}
+
 // Receiver is the resolver for the receiver field.
 func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, error) {
 	usecaseInput := &usecase.ListReceiverByIdInput{
@@ -58,7 +75,7 @@ func (r *queryResolver) Receiver(ctx context.Context, id string) (*Receiver, err
 		return nil, err
 	}
 
-	return toOutput(*result), nil
+	return ToOutput(*result), nil
 }
 
 // ListReceivers is the resolver for the listReceivers field.
@@ -84,7 +101,7 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 	isInCurrentPage := true
 	var cursor string
 	if after != nil {
-		cursor, err = decodeBase64(*after)
+		cursor, err = DecodeBase64(*after)
 		if cursor != "" {
 			isInCurrentPage = false
 		}
@@ -99,7 +116,7 @@ func (r *queryResolver) ListReceivers(ctx context.Context, first *int, after *st
 		if isInCurrentPage && !hasReachedTotalPerPage {
 			edges[count] = &Edge{
 				Cursor: EncodeBase64([]byte(receiver.ID)),
-				Node:   toOutput(receiver),
+				Node:   ToOutput(receiver),
 			}
 			count++
 		}

@@ -25,9 +25,15 @@ input NewReceiver {
 	email:      String!
 	pixKeyType: String!
 	pixKey: 	String!
-	bank:       String
-	agency:     String
-	account:    String
+}
+
+input UpdateReceiver {
+  	id:         ID!
+  	identifier: String
+	name:       String
+	email:      String
+	pixKeyType: String
+	pixKey: 	String
 }
 
 type Receivers {
@@ -54,5 +60,6 @@ type Query {
 type Mutation {
   createReceiver(input: NewReceiver!): Receiver!
   deleteReceivers(ids: [String!]!): String!
+  updateReceiver(input: UpdateReceiver!): String!
 }
 
