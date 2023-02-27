@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -28,7 +31,7 @@ func main() {
 		port = ":8080"
 	}
 
-	ctx := context.Background() //context.WithTimeout(context.Background(), 5*time.Second)
+	ctx := context.Background()
 
 	collection := initDB(ctx)
 	receiverRepository := repository.NewReceiverRepository(collection, ctx)
@@ -37,8 +40,18 @@ func main() {
 
 	initServer(port, receiverUsecases)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := http.ListenAndServe(":"+port, nil); err != nil && err != http.ErrServerClosed {
+			log.Fatal("error trying to start server", err)
+		}
+	}()
+
+	<-done
+
+	fmt.Println("shutting down gracefully, press Ctrl+C again to force")
 }
 
 func initServer(port string, receiverUsecases usecase.ReceiverUseCases) {
